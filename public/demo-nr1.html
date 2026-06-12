@@ -1,0 +1,914 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Demonstração NR-1</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#071B34,#0A2B52,#103E70);
+    color:#fff;
+    min-height:100vh;
+    display:flex;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    width:280px;
+    height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    backdrop-filter:blur(18px);
+    background:rgba(255,255,255,0.08);
+    border-right:1px solid rgba(255,255,255,0.08);
+    padding:30px 20px;
+    display:flex;
+    flex-direction:column;
+    z-index:999;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:800;
+    margin-bottom:40px;
+    color:#fff;
+}
+
+.logo span{
+    color:#5cc8ff;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.menu button{
+    border:none;
+    background:transparent;
+    color:#cfd8e3;
+    padding:16px;
+    border-radius:14px;
+    text-align:left;
+    cursor:pointer;
+    font-size:15px;
+    transition:.3s;
+    font-weight:500;
+}
+
+.menu button:hover{
+    background:rgba(255,255,255,0.12);
+    transform:translateX(4px);
+}
+
+.menu button.active{
+    background:linear-gradient(135deg,#2196f3,#4fc3f7);
+    color:#fff;
+    box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+/* MAIN */
+
+.main{
+    margin-left:280px;
+    width:calc(100% - 280px);
+    padding:30px;
+}
+
+.section{
+    display:none;
+    animation:fade .4s ease;
+}
+
+.section.active{
+    display:block;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.title{
+    font-size:34px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    color:#b6c5d6;
+    margin-bottom:30px;
+}
+
+/* CARDS */
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.card{
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,0.08);
+    padding:25px;
+    border-radius:24px;
+    box-shadow:0 10px 35px rgba(0,0,0,0.2);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+}
+
+.card h3{
+    font-size:15px;
+    color:#c9d4df;
+    margin-bottom:12px;
+}
+
+.card .value{
+    font-size:36px;
+    font-weight:800;
+}
+
+.progress-container{
+    background:rgba(255,255,255,0.08);
+    border-radius:20px;
+    overflow:hidden;
+    height:22px;
+    margin-top:15px;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00c6ff,#0072ff);
+    transition:.5s;
+}
+
+/* GRID */
+
+.demo-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+}
+
+.panel{
+    background:rgba(255,255,255,0.08);
+    border-radius:24px;
+    padding:25px;
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,0.08);
+}
+
+.panel h2{
+    margin-bottom:20px;
+}
+
+/* CHECKLIST */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th,td{
+    padding:16px;
+    text-align:center;
+}
+
+th{
+    background:rgba(255,255,255,0.1);
+}
+
+tr{
+    border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+tr:hover{
+    background:rgba(255,255,255,0.05);
+}
+
+input[type="radio"]{
+    transform:scale(1.2);
+    cursor:pointer;
+}
+.company-form{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+    gap:18px;
+}
+
+.company-form label{
+    display:block;
+    margin-bottom:8px;
+    color:#cfd8e3;
+    font-size:14px;
+}
+
+.company-form input{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:14px;
+    background:rgba(255,255,255,0.08);
+    color:#fff;
+    outline:none;
+}
+
+.company-form input:focus{
+    box-shadow:0 0 0 2px rgba(79,195,247,0.5);
+}
+
+.locked-message{
+    margin-bottom:25px;
+    padding:18px;
+    border-radius:18px;
+    background:rgba(33,150,243,0.14);
+    border:1px solid rgba(79,195,247,0.28);
+    color:#dbeafe;
+    line-height:1.6;
+}
+
+/* BUTTONS */
+
+.actions{
+    display:flex;
+    gap:15px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    border:none;
+    padding:16px 24px;
+    border-radius:14px;
+    cursor:pointer;
+    font-weight:700;
+    transition:.3s;
+}
+
+.btn-primary{
+    background:linear-gradient(135deg,#00c6ff,#0072ff);
+    color:#fff;
+}
+
+.btn-danger{
+    background:linear-gradient(135deg,#ff416c,#ff4b2b);
+    color:#fff;
+}
+
+.btn:hover{
+    transform:translateY(-3px);
+}
+
+/* RESPONSIVO */
+
+@media(max-width:1100px){
+
+    .demo-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:900px){
+
+    .sidebar{
+        width:100%;
+        height:auto;
+        position:relative;
+    }
+
+    body{
+        flex-direction:column;
+    }
+
+    .main{
+        margin-left:0;
+        width:100%;
+    }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        Demonstração <span>NR-1</span>
+    </div>
+
+    <div class="menu">
+        <button class="nav-btn active" data-section="demonstracao">Demonstração</button>
+        <button class="nav-btn" data-section="checklist">Checklist NR-1</button>
+        <button class="nav-btn" data-section="empresa">Cadastrar Empresa</button>
+        <button class="nav-btn" data-section="relatorios">Relatórios</button>
+        <button class="nav-btn" data-section="indicadores">Indicadores</button>
+        <button class="nav-btn" data-section="compliance">Compliance</button>
+    </div>
+
+</aside>
+
+<!-- MAIN -->
+
+<main class="main" id="demoPDF">
+
+<!-- DEMONSTRAÇÃO -->
+
+<section class="section active" id="demonstracao">
+
+    <h1 class="title">Demonstração NR-1</h1>
+    <p class="subtitle">
+        Experiência prática de avaliação, relatórios e indicadores da plataforma NR-1.
+    </p>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Conformidade Geral</h3>
+            <div class="value" id="complianceValue">0%</div>
+        </div>
+
+        <div class="card">
+            <h3>NÃ­vel de SeguranÃ§a</h3>
+            <div class="value" id="securityValue">0%</div>
+        </div>
+
+        <div class="card">
+            <h3>Indicador Operacional</h3>
+            <div class="value" id="operationalValue">0%</div>
+        </div>
+
+        <div class="card">
+            <h3>Status Empresarial</h3>
+            <div class="value" id="statusValue">Inicial</div>
+        </div>
+
+    </div>
+
+    <div class="panel">
+
+        <h2>Barra de Progresso da Empresa</h2>
+
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="demo-grid">
+
+        <div class="panel">
+            <h2>Radar Corporativo NR-1</h2>
+            <canvas id="radarChart"></canvas>
+        </div>
+
+        <div class="panel">
+            <h2>Resumo EstratÃ©gico</h2>
+
+            <p style="line-height:1.8;color:#dbe7f3;">
+                O sistema monitora indicadores relacionados Ã  conformidade da NR-1,
+                gestÃ£o de riscos ocupacionais, treinamentos obrigatÃ³rios,
+                controle documental, inspeÃ§Ãµes periÃ³dicas e prevenÃ§Ã£o de acidentes.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- CHECKLIST -->
+
+<section class="section" id="checklist">
+
+    <h1 class="title">Checklist NR-1</h1>
+
+    <div class="panel">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>SIM</th>
+                    <th>EM IMPLEMENTAÃ‡ÃƒO</th>
+                    <th>NÃƒO</th>
+                </tr>
+            </thead>
+
+            <tbody id="checklistBody"></tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<!-- CADASTRO DA EMPRESA -->
+
+<section class="section" id="empresa">
+
+    <h1 class="title">Cadastrar Empresa</h1>
+    <p class="subtitle">
+        O resultado do checklist só será liberado após o cadastro da empresa.
+    </p>
+
+    <div class="locked-message">
+        Cadastre os dados corporativos para acessar relatórios, classificação e diagnóstico do checklist NR-1.
+    </div>
+
+    <div class="panel">
+        <form id="companyForm" class="company-form">
+            <div>
+                <label for="companyName">Empresa *</label>
+                <input id="companyName" type="text" required placeholder="Nome da empresa">
+            </div>
+
+            <div>
+                <label for="companyCnpj">CNPJ *</label>
+                <input id="companyCnpj" type="text" required placeholder="00.000.000/0000-00">
+            </div>
+
+            <div>
+                <label for="companyEmail">E-mail corporativo *</label>
+                <input id="companyEmail" type="email" required placeholder="contato@empresa.com">
+            </div>
+
+            <div>
+                <label for="companyPhone">Telefone *</label>
+                <input id="companyPhone" type="tel" required placeholder="(00) 00000-0000">
+            </div>
+
+            <div class="actions" style="grid-column:1/-1;">
+                <button class="btn btn-primary" type="submit">
+                    Cadastrar Empresa e Ver Resultado
+                </button>
+            </div>
+        </form>
+    </div>
+
+</section>
+<!-- RELATÓRIOS -->
+
+<section class="section" id="relatorios">
+
+    <h1 class="title">RelatÃ³rios Inteligentes</h1>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Resultado Geral</h3>
+            <div class="value" id="resultadoGeral">0%</div>
+        </div>
+
+        <div class="card">
+            <h3>ClassificaÃ§Ã£o</h3>
+            <div class="value" id="classificacao">Inicial</div>
+        </div>
+
+    </div>
+
+    <div class="panel">
+
+        <h2>DiagnÃ³stico AutomÃ¡tico</h2>
+
+        <p id="diagnostico" style="line-height:1.8;color:#dbe7f3;">
+            Responda o checklist para gerar o diagnÃ³stico.
+        </p>
+
+    </div>
+
+    <br>
+
+    <div class="panel">
+
+        <h2>SugestÃµes Inteligentes</h2>
+
+        <ul id="sugestoes" style="line-height:2;color:#dbe7f3;padding-left:20px;">
+        </ul>
+
+    </div>
+
+    <div class="actions">
+
+        <button class="btn btn-primary" id="exportPDF">
+            Exportar PDF
+        </button>
+
+        <button class="btn btn-danger" id="resetSystem">
+            Reiniciar Sistema
+        </button>
+
+    </div>
+
+</section>
+
+<!-- INDICADORES -->
+
+<section class="section" id="indicadores">
+
+    <h1 class="title">Indicadores Corporativos</h1>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>GestÃ£o de Riscos</h3>
+            <div class="value">Ativo</div>
+        </div>
+
+        <div class="card">
+            <h3>Controle Operacional</h3>
+            <div class="value">Monitorado</div>
+        </div>
+
+        <div class="card">
+            <h3>SeguranÃ§a Ocupacional</h3>
+            <div class="value">Elevada</div>
+        </div>
+
+        <div class="card">
+            <h3>GestÃ£o Documental</h3>
+            <div class="value">Atualizada</div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- COMPLIANCE -->
+
+<section class="section" id="compliance">
+
+    <h1 class="title">Compliance Empresarial</h1>
+
+    <div class="panel">
+
+        <p style="line-height:2;color:#dbe7f3;">
+
+            A conformidade empresarial relacionada Ã  NR-1 envolve gestÃ£o preventiva,
+            auditorias internas, controle documental, gerenciamento de riscos ocupacionais,
+            seguranÃ§a corporativa e reduÃ§Ã£o de riscos jurÃ­dicos.
+            O cumprimento adequado fortalece a cultura organizacional e melhora
+            os indicadores de saÃºde e seguranÃ§a ocupacional.
+
+        </p>
+
+    </div>
+
+</section>
+
+</main>
+
+<script>
+
+/* NAVEGAÇÃO */
+
+const navButtons = document.querySelectorAll(".nav-btn");
+const sections = document.querySelectorAll(".section");
+let companyRegistered = localStorage.getItem("nr1.demo.company.registration") === "true";
+
+function activateSection(sectionId){
+    const targetSection = sectionId === "relatorios" && !companyRegistered ? "empresa" : sectionId;
+
+    navButtons.forEach(b=>{
+        b.classList.toggle("active", b.dataset.section === targetSection);
+    });
+
+    sections.forEach(sec=>{
+        sec.classList.toggle("active", sec.id === targetSection);
+    });
+}
+
+navButtons.forEach(btn=>{
+    btn.addEventListener("click",()=>{
+        activateSection(btn.dataset.section);
+    });
+});
+
+const companyForm = document.getElementById("companyForm");
+
+companyForm.addEventListener("submit",(event)=>{
+    event.preventDefault();
+
+    const registration = {
+        company:document.getElementById("companyName").value.trim(),
+        cnpj:document.getElementById("companyCnpj").value.trim(),
+        email:document.getElementById("companyEmail").value.trim(),
+        phone:document.getElementById("companyPhone").value.trim(),
+        registeredAt:new Date().toISOString()
+    };
+
+    if(!registration.company || !registration.cnpj || !registration.email || !registration.phone){
+        return;
+    }
+
+    localStorage.setItem("nr1.demo.company.registration","true");
+    localStorage.setItem("nr1.demo.company.data",JSON.stringify(registration));
+    companyRegistered = true;
+    activateSection("relatorios");
+});
+
+/* CHECKLIST */
+
+const checklistItems = [
+
+"Programa de gerenciamento de riscos",
+"Treinamentos obrigatÃ³rios",
+"Controle documental",
+"Plano de emergÃªncia",
+"GestÃ£o de riscos ocupacionais",
+"Uso de EPIs",
+"Compliance empresarial",
+"InspeÃ§Ãµes periÃ³dicas",
+"SeguranÃ§a operacional",
+"Indicadores de seguranÃ§a"
+
+];
+
+const checklistBody = document.getElementById("checklistBody");
+
+checklistItems.forEach((item,index)=>{
+
+    checklistBody.innerHTML += `
+
+        <tr>
+
+            <td>${item}</td>
+
+            <td>
+                <input type="radio" name="q${index}" value="1">
+            </td>
+
+            <td>
+                <input type="radio" name="q${index}" value="0.5">
+            </td>
+
+            <td>
+                <input type="radio" name="q${index}" value="0">
+            </td>
+
+        </tr>
+
+    `;
+
+});
+
+/* CHART */
+
+const ctx = document.getElementById('radarChart');
+
+const radarChart = new Chart(ctx, {
+
+    type:'radar',
+
+    data:{
+        labels:[
+            'Riscos',
+            'Treinamentos',
+            'Compliance',
+            'EPIs',
+            'InspeÃ§Ãµes',
+            'DocumentaÃ§Ã£o'
+        ],
+
+        datasets:[{
+            label:'Desempenho',
+            data:[0,0,0,0,0,0],
+            fill:true
+        }]
+    },
+
+    options:{
+        responsive:true,
+        scales:{
+            r:{
+                min:0,
+                max:100,
+                ticks:{
+                    display:false
+                }
+            }
+        }
+    }
+
+});
+
+/* UPDATE */
+
+document.addEventListener("change",()=>{
+
+    calculate();
+
+});
+
+function calculate(){
+
+    const radios = document.querySelectorAll('input[type="radio"]:checked');
+
+    let total = 0;
+
+    radios.forEach(r=>{
+
+        total += Number(r.value);
+
+    });
+
+    const percent = Math.round((total / checklistItems.length) * 100);
+
+    document.getElementById("complianceValue").innerText = percent + "%";
+    document.getElementById("securityValue").innerText = percent + "%";
+    document.getElementById("operationalValue").innerText = percent + "%";
+
+    document.getElementById("resultadoGeral").innerText = percent + "%";
+
+    document.getElementById("progressBar").style.width = percent + "%";
+
+    let status = "Inicial";
+
+    if(percent >= 80){
+        status = "Excelente";
+    }
+    else if(percent >= 60){
+        status = "Bom";
+    }
+    else if(percent >= 40){
+        status = "Moderado";
+    }
+    else{
+        status = "CrÃ­tico";
+    }
+
+    document.getElementById("statusValue").innerText = status;
+    document.getElementById("classificacao").innerText = status;
+
+    radarChart.data.datasets[0].data = [
+        percent,
+        percent - 5,
+        percent,
+        percent - 10,
+        percent - 8,
+        percent
+    ];
+
+    radarChart.update();
+
+    generateDiagnosis(percent);
+
+}
+
+function generateDiagnosis(percent){
+
+    const diagnostico = document.getElementById("diagnostico");
+
+    const sugestoes = document.getElementById("sugestoes");
+
+    sugestoes.innerHTML = "";
+
+    if(percent >= 80){
+
+        diagnostico.innerHTML =
+        "A empresa apresenta elevado nÃ­vel de conformidade com a NR-1 e mantÃ©m indicadores preventivos positivos.";
+
+        addSuggestion("Continuar monitoramentos preventivos.");
+        addSuggestion("Atualizar treinamentos periodicamente.");
+        addSuggestion("Realizar auditorias internas.");
+
+    }
+
+    else if(percent >= 60){
+
+        diagnostico.innerHTML =
+        "A empresa possui boa estrutura preventiva, porÃ©m existem pontos de melhoria operacional.";
+
+        addSuggestion("Fortalecer inspeÃ§Ãµes periÃ³dicas.");
+        addSuggestion("Atualizar documentaÃ§Ã£o preventiva.");
+        addSuggestion("Melhorar indicadores operacionais.");
+
+    }
+
+    else{
+
+        diagnostico.innerHTML =
+        "A empresa apresenta necessidade de melhorias relacionadas Ã  gestÃ£o de riscos e conformidade preventiva.";
+
+        addSuggestion("Implementar PGR atualizado.");
+        addSuggestion("Realizar treinamentos obrigatÃ³rios.");
+        addSuggestion("ReforÃ§ar gestÃ£o de riscos ocupacionais.");
+        addSuggestion("Melhorar compliance empresarial.");
+
+    }
+
+}
+
+function addSuggestion(text){
+
+    const li = document.createElement("li");
+
+    li.innerText = text;
+
+    document.getElementById("sugestoes").appendChild(li);
+
+}
+
+/* RESET */
+
+document.getElementById("resetSystem")
+.addEventListener("click",()=>{
+
+    document
+    .querySelectorAll('input[type="radio"]')
+    .forEach(r=>r.checked=false);
+
+    document.getElementById("progressBar").style.width="0%";
+
+    document.getElementById("complianceValue").innerText="0%";
+    document.getElementById("securityValue").innerText="0%";
+    document.getElementById("operationalValue").innerText="0%";
+
+    document.getElementById("resultadoGeral").innerText="0%";
+
+    document.getElementById("statusValue").innerText="Inicial";
+
+    document.getElementById("classificacao").innerText="Inicial";
+
+    document.getElementById("diagnostico").innerText=
+    "Responda o checklist para gerar o diagnÃ³stico.";
+
+    document.getElementById("sugestoes").innerHTML="";
+
+    radarChart.data.datasets[0].data=[0,0,0,0,0,0];
+
+    radarChart.update();
+
+});
+
+/* PDF */
+
+document.getElementById("exportPDF")
+.addEventListener("click",()=>{
+
+    const { jsPDF } = window.jspdf;
+
+    html2canvas(document.querySelector("#demoPDF"),{
+        scale:2
+    }).then(canvas=>{
+
+        const imgData = canvas.toDataURL("image/png");
+
+        const pdf = new jsPDF("p","mm","a4");
+
+        const width = 190;
+
+        const height =
+        canvas.height * width / canvas.width;
+
+        pdf.addImage(imgData,'PNG',10,10,width,height);
+
+        pdf.save("demonstracao-nr1.pdf");
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>

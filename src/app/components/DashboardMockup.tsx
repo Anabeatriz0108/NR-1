@@ -1,7 +1,20 @@
 import { motion } from 'motion/react';
 import { TrendingUp, Users, CheckCircle, AlertTriangle, Activity, BarChart3 } from 'lucide-react';
+import type { DashboardRealtimeState } from '../hooks/useRealtimeDashboard';
 
-export function DashboardMockup() {
+type DashboardMockupProps = {
+  data: DashboardRealtimeState;
+  isConnected: boolean;
+  isSyncing: boolean;
+  lastEventLabel: string;
+};
+
+export function DashboardMockup({ data, isConnected, isSyncing, lastEventLabel }: DashboardMockupProps) {
+  const complianceKpi = data.kpis.find((kpi) => kpi.id === 'compliance') ?? data.kpis[0];
+  const companiesKpi = data.kpis.find((kpi) => kpi.id === 'companies') ?? data.kpis[1];
+  const trainingKpi = data.kpis.find((kpi) => kpi.id === 'training') ?? data.kpis[2];
+  const sparkline = data.lineData.map((point) => Math.max(2, Math.round(point.conformidade / 10)));
+  const trainingBars = data.lineData.map((point) => point.treinamentos);
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -23,8 +36,8 @@ export function DashboardMockup() {
               <span className="ml-4 text-xs text-gray-400 font-mono">portal-nr1.app/dashboard</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-              <span className="text-xs text-gray-400">Online</span>
+              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-orange-400'}`}></div>
+              <span className="text-xs text-gray-400">{isConnected ? 'Online' : 'Reconectando'}</span>
             </div>
           </div>
         </div>
@@ -40,13 +53,15 @@ export function DashboardMockup() {
             >
               <div className="flex items-center justify-between mb-2">
                 <CheckCircle className="w-5 h-5 text-green-400" />
-                <span className="text-xs text-green-400">+5.2%</span>
+                <span className="text-xs text-green-400">{complianceKpi.trend}</span>
               </div>
-              <div className="text-2xl font-bold text-green-400">95%</div>
+              <motion.div key={complianceKpi.value} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-green-400">
+                {complianceKpi.value}
+              </motion.div>
               <div className="text-xs text-gray-400 mt-1">Conformidade</div>
               {/* Mini Sparkline */}
               <div className="flex items-end gap-0.5 mt-2 h-6">
-                {[4, 6, 5, 8, 7, 9, 8, 10].map((height, i) => (
+                {sparkline.map((height, i) => (
                   <motion.div
                     key={i}
                     initial={{ height: 0 }}
@@ -65,15 +80,17 @@ export function DashboardMockup() {
             >
               <div className="flex items-center justify-between mb-2">
                 <Users className="w-5 h-5 text-blue-400" />
-                <span className="text-xs text-blue-400">+23</span>
+                <span className="text-xs text-blue-400">{companiesKpi.trend}</span>
               </div>
-              <div className="text-2xl font-bold text-blue-400">847</div>
+              <motion.div key={companiesKpi.value} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-2xl font-bold text-blue-400">
+                {companiesKpi.value}
+              </motion.div>
               <div className="text-xs text-gray-400 mt-1">Empresas Ativas</div>
               {/* Progress Bar */}
               <div className="mt-2 h-1.5 bg-blue-950/50 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}
-                  animate={{ width: '85%' }}
+                  animate={{ width: `${Math.min(100, Math.round((data.employees.active / 1000) * 100))}%` }}
                   transition={{ delay: 0.5, duration: 1 }}
                   className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full"
                 />
@@ -93,12 +110,12 @@ export function DashboardMockup() {
                 <Activity className="w-4 h-4 text-purple-400" />
                 <span className="text-xs font-medium text-gray-300">Treinamentos Realizados</span>
               </div>
-              <span className="text-xs text-purple-400">+12% mês</span>
+              <span className="text-xs text-purple-400">{trainingKpi.trend} mes</span>
             </div>
 
             {/* Animated Chart Bars */}
             <div className="flex items-end justify-between gap-2 h-24">
-              {[60, 70, 65, 80, 75, 90, 85, 95].map((height, i) => (
+              {trainingBars.map((height, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-1">
                   <motion.div
                     initial={{ height: 0 }}
@@ -118,14 +135,9 @@ export function DashboardMockup() {
             </div>
 
             <div className="flex justify-between mt-2 text-[10px] text-gray-500">
-              <span>Jan</span>
-              <span>Fev</span>
-              <span>Mar</span>
-              <span>Abr</span>
-              <span>Mai</span>
-              <span>Jun</span>
-              <span>Jul</span>
-              <span>Ago</span>
+              {data.lineData.map((point) => (
+                <span key={point.id}>{point.month}</span>
+              ))}
             </div>
           </motion.div>
 
@@ -145,13 +157,9 @@ export function DashboardMockup() {
             </div>
 
             {/* Risk Items */}
-            {[
-              { risk: 'Ergonômico', level: 'Baixo', color: 'green' },
-              { risk: 'Químico', level: 'Médio', color: 'yellow' },
-              { risk: 'Físico', level: 'Baixo', color: 'green' },
-            ].map((item, i) => (
+            {data.risks.map((item, i) => (
               <motion.div
-                key={i}
+                key={item.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 1 + i * 0.1 }}
@@ -177,7 +185,7 @@ export function DashboardMockup() {
           >
             <div className="flex items-center gap-2">
               <TrendingUp className="w-3 h-3 text-green-400" />
-              <span className="text-[10px] text-gray-400">Atualizado há 2 min</span>
+              <span className="text-[10px] text-gray-400">{isSyncing ? 'Sincronizando' : lastEventLabel}</span>
             </div>
             <div className="flex gap-1">
               {[1, 2, 3].map((i) => (

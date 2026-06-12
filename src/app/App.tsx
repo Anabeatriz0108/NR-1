@@ -47,12 +47,21 @@ import { SocialProofSection } from './components/SocialProofSection';
 import { AccessibilityProvider } from './contexts/AccessibilityContext';
 import { AccessibilityPanel } from './components/AccessibilityPanel';
 import { VoiceAssistant } from './components/VoiceAssistant';
+import { Toaster } from './components/ui/sonner';
+import { useRealtimeDashboard } from './hooks/useRealtimeDashboard';
 
 export default function App() {
+  const navigationSections = ['inicio', 'sobre', 'indicadores', 'beneficios', 'contato'];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('inicio');
   const [scrolled, setScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const {
+    data: realtimeDashboard,
+    isConnected: isRealtimeConnected,
+    isSyncing: isRealtimeSyncing,
+    lastEventLabel
+  } = useRealtimeDashboard();
 
   // Checklist states
   const [isChecklistOpen, setIsChecklistOpen] = useState(false);
@@ -60,7 +69,8 @@ export default function App() {
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [leadData, setLeadData] = useState({ name: '', company: '', email: '', phone: '' });
+  const [isCompanyRegistered, setIsCompanyRegistered] = useState(false);
+  const [leadData, setLeadData] = useState({ name: '', company: '', cnpj: '', email: '', phone: '' });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,7 +78,7 @@ export default function App() {
       setScrolled(scrollPosition > 20);
       setScrollY(scrollPosition);
 
-      const sections = ['inicio', 'sobre', 'blog', 'dashboard', 'indicadores', 'beneficios', 'contato'];
+      const sections = navigationSections;
       const adjustedPosition = scrollPosition + 100;
 
       for (const section of sections) {
@@ -95,6 +105,10 @@ export default function App() {
     }
   };
 
+  const openDemo = () => {
+    window.location.href = '/demo-nr1.html';
+  };
+
   const radarData = [
     { id: 'conformidade', subject: 'Conformidade', A: 95, fullMark: 100 },
     { id: 'treinamentos', subject: 'Treinamentos', A: 88, fullMark: 100 },
@@ -111,6 +125,24 @@ export default function App() {
     { id: 'mai', month: 'Mai', conformidade: 90, treinamentos: 85 },
     { id: 'jun', month: 'Jun', conformidade: 95, treinamentos: 88 },
   ];
+
+  const dashboardIconMap = {
+    check: CheckCircle,
+    briefcase: Briefcase,
+    graduation: GraduationCap,
+    alert: AlertTriangle,
+    trending: TrendingUp,
+    shield: Shield,
+    clipboard: ClipboardCheck,
+  };
+  const dashboardKpis = realtimeDashboard.kpis.map((kpi) => ({
+    ...kpi,
+    icon: dashboardIconMap[kpi.icon],
+  }));
+  const dashboardIndicators = realtimeDashboard.indicators.map((indicator) => ({
+    ...indicator,
+    icon: dashboardIconMap[indicator.icon],
+  }));
 
   const checklistQuestions = [
     { id: 0, question: 'Sua empresa possui PGR (Programa de Gerenciamento de Riscos) implementado?', category: 'Documentação' },
@@ -147,9 +179,30 @@ export default function App() {
 
   const handleLeadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const hasCompanyRegistration = leadData.company.trim() && leadData.cnpj.trim() && leadData.email.trim() && leadData.phone.trim();
+
+    if (!hasCompanyRegistration) {
+      setShowLeadForm(true);
+      setShowResults(false);
+      return;
+    }
+
+    localStorage.setItem('nr1.company.registration', JSON.stringify({
+      ...leadData,
+      registeredAt: new Date().toISOString(),
+    }));
+
+    setIsCompanyRegistered(true);
     setShowLeadForm(false);
     setShowResults(true);
   };
+
+  useEffect(() => {
+    if (showResults && !isCompanyRegistered) {
+      setShowResults(false);
+      setShowLeadForm(true);
+    }
+  }, [showResults, isCompanyRegistered]);
 
   const resetChecklist = () => {
     setIsChecklistOpen(false);
@@ -157,11 +210,13 @@ export default function App() {
     setAnswers({});
     setShowLeadForm(false);
     setShowResults(false);
-    setLeadData({ name: '', company: '', email: '', phone: '' });
+    setIsCompanyRegistered(false);
+    setLeadData({ name: '', company: '', cnpj: '', email: '', phone: '' });
   };
 
   const score = calculateScore();
   const scoreLevel = getScoreLevel(score);
+  const canShowChecklistResults = showResults && isCompanyRegistered;
   const scoreRadarData = [
     { id: 'doc', subject: 'Documentação', score: Object.entries(answers).filter(([k, v]) => v && [0, 5].includes(Number(k))).length / 2 * 100 },
     { id: 'train', subject: 'Treinamento', score: Object.entries(answers).filter(([k, v]) => v && [1, 3].includes(Number(k))).length / 2 * 100 },
@@ -172,6 +227,7 @@ export default function App() {
 
   return (
     <AccessibilityProvider>
+      <Toaster richColors position="top-right" />
       {/* Skip to Main Content */}
       <a href="#main-content" className="skip-to-main">
         Pular para o conteúdo principal
@@ -200,7 +256,7 @@ export default function App() {
             </div>
 
             <nav role="navigation" aria-label="Navegação principal" className="hidden lg:flex items-center gap-6">
-              {['inicio', 'sobre', 'blog', 'dashboard', 'indicadores', 'beneficios', 'contato'].map((item) => (
+              {navigationSections.map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item)}
@@ -227,7 +283,7 @@ export default function App() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => scrollToSection('dashboard')}
+                onClick={openDemo}
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-400/50 font-medium relative overflow-hidden group"
               >
                 <span className="relative z-10">Acessar Sistema</span>
@@ -251,7 +307,7 @@ export default function App() {
             className="lg:hidden backdrop-blur-xl bg-slate-950/95 border-t border-blue-500/20"
           >
             <div className="px-4 py-4 space-y-3">
-              {['inicio', 'sobre', 'blog', 'dashboard', 'indicadores', 'beneficios', 'contato'].map((item) => (
+              {navigationSections.map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item)}
@@ -261,7 +317,7 @@ export default function App() {
                 </button>
               ))}
               <button
-                onClick={() => scrollToSection('dashboard')}
+                onClick={openDemo}
                 className="w-full px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-lg shadow-blue-500/50"
               >
                 Acessar Sistema
@@ -341,12 +397,12 @@ export default function App() {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => scrollToSection('dashboard')}
+                  onClick={openDemo}
                   className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/40 hover:shadow-blue-400/60 flex items-center justify-center gap-2 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                   <Zap className="w-5 h-5 relative z-10" />
-                  <span className="font-bold relative z-10">Ver Dashboard</span>
+                  <span className="font-bold relative z-10">Abrir Demonstração</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative z-10" />
                 </motion.button>
 
@@ -386,13 +442,18 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-green-400" />
-                  <span>Resultado imediato</span>
+                  <span>Resultado após cadastro</span>
                 </div>
               </motion.div>
             </motion.div>
 
             {/* Dashboard Mockup */}
-            <DashboardMockup />
+            <DashboardMockup
+              data={realtimeDashboard}
+              isConnected={isRealtimeConnected}
+              isSyncing={isRealtimeSyncing}
+              lastEventLabel={lastEventLabel}
+            />
           </div>
         </div>
       </section>
@@ -451,7 +512,7 @@ export default function App() {
               }
             ].map((item, index) => (
               <motion.div
-                key={index}
+                key={item.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -531,7 +592,7 @@ export default function App() {
               }
             ].map((article, index) => (
               <motion.article
-                key={index}
+                key={article.title}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -585,21 +646,27 @@ export default function App() {
             <p className="text-lg text-gray-300 max-w-3xl mx-auto">
               Visualize indicadores em tempo real e tome decisões baseadas em dados
             </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs text-gray-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-green-400/30 bg-green-500/10 px-3 py-1">
+                <span className={`w-2 h-2 rounded-full ${isRealtimeConnected ? 'bg-green-400 animate-pulse' : 'bg-orange-400'}`}></span>
+                {isRealtimeConnected ? 'Online' : 'Reconectando'}
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/10 px-3 py-1">
+                <Activity className={`w-3 h-3 text-blue-400 ${isRealtimeSyncing ? 'animate-spin' : ''}`} />
+                {isRealtimeSyncing ? 'Sincronizando' : lastEventLabel}
+              </span>
+            </div>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {[
-              { icon: CheckCircle, label: 'Conformidade', value: '95%', trend: '+5%', color: 'green' },
-              { icon: Briefcase, label: 'Empresas', value: '847', trend: '+23', color: 'blue' },
-              { icon: GraduationCap, label: 'Treinamentos', value: '1.2K', trend: '+12%', color: 'purple' },
-              { icon: AlertTriangle, label: 'Pendências', value: '23', trend: '-8', color: 'orange' }
-            ].map((kpi, index) => (
+            {dashboardKpis.map((kpi, index) => (
               <motion.div
-                key={index}
+                key={kpi.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                layout
                 className="p-6 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10 hover:border-blue-400/50 transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -610,7 +677,17 @@ export default function App() {
                     {kpi.trend}
                   </span>
                 </div>
-                <div className="text-3xl font-bold mb-1">{kpi.value}</div>
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={kpi.value}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="text-3xl font-bold mb-1"
+                  >
+                    {kpi.value}
+                  </motion.div>
+                </AnimatePresence>
                 <div className="text-sm text-gray-400">{kpi.label}</div>
               </motion.div>
             ))}
@@ -628,9 +705,9 @@ export default function App() {
                 Evolução de Indicadores
               </h3>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={lineData}>
+                <LineChart data={realtimeDashboard.lineData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis dataKey="id" stroke="#9ca3af" tickFormatter={(value) => lineData.find(d => d.id === value)?.month || value} />
+                  <XAxis dataKey="id" stroke="#9ca3af" tickFormatter={(value) => realtimeDashboard.lineData.find(d => d.id === value)?.month || value} />
                   <YAxis stroke="#9ca3af" />
                   <Tooltip
                     contentStyle={{
@@ -639,7 +716,7 @@ export default function App() {
                       borderRadius: '12px',
                       backdropFilter: 'blur(12px)'
                     }}
-                    labelFormatter={(value) => lineData.find(d => d.id === value)?.month || value}
+                    labelFormatter={(value) => realtimeDashboard.lineData.find(d => d.id === value)?.month || value}
                   />
                   <Legend />
                   <Line key="conformidade-line" type="monotone" dataKey="conformidade" stroke="#3b82f6" strokeWidth={3} name="Conformidade %" />
@@ -659,9 +736,9 @@ export default function App() {
                 Radar de Conformidade
               </h3>
               <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={radarData}>
+                <RadarChart data={realtimeDashboard.radarData}>
                   <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                  <PolarAngleAxis dataKey="id" stroke="#9ca3af" tickFormatter={(value) => radarData.find(d => d.id === value)?.subject || value} />
+                  <PolarAngleAxis dataKey="id" stroke="#9ca3af" tickFormatter={(value) => realtimeDashboard.radarData.find(d => d.id === value)?.subject || value} />
                   <PolarRadiusAxis stroke="#9ca3af" />
                   <Radar key="performance-radar" name="Performance" dataKey="A" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.5} />
                 </RadarChart>
@@ -689,50 +766,30 @@ export default function App() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: TrendingUp,
-                title: 'Taxa de Conformidade',
-                description: 'Percentual de adequação às normas regulamentadoras e procedimentos internos de SST.',
-                value: '95%',
-                color: 'green'
-              },
-              {
-                icon: GraduationCap,
-                title: 'Treinamentos Realizados',
-                description: 'Capacitações concluídas incluindo NR-1, uso de EPIs e procedimentos de segurança.',
-                value: '1.247',
-                color: 'blue'
-              },
-              {
-                icon: Shield,
-                title: 'Gestão de Riscos',
-                description: 'Riscos identificados, avaliados e com medidas de controle implementadas.',
-                value: '342',
-                color: 'purple'
-              },
-              {
-                icon: ClipboardCheck,
-                title: 'Auditorias Internas',
-                description: 'Inspeções periódicas realizadas para garantir conformidade contínua.',
-                value: '48',
-                color: 'cyan'
-              }
-            ].map((indicator, index) => (
+            {dashboardIndicators.map((indicator, index) => (
               <motion.div
-                key={index}
+                key={indicator.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                layout
                 className="group p-6 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 hover:border-blue-400/50 transition-all hover:shadow-xl hover:shadow-blue-500/20"
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-${indicator.color}-500 to-${indicator.color}-600 flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-shadow`}>
                   <indicator.icon className="w-7 h-7 text-white" />
                 </div>
-                <div className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-                  {indicator.value}
-                </div>
+                <AnimatePresence mode="popLayout">
+                  <motion.div
+                    key={indicator.value}
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent"
+                  >
+                    {indicator.value}
+                  </motion.div>
+                </AnimatePresence>
                 <h3 className="text-lg font-bold mb-3">{indicator.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{indicator.description}</p>
               </motion.div>
@@ -783,7 +840,7 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <CheckCircle className="w-5 h-5 text-green-400" />
-                  <span>Resultado imediato</span>
+                  <span>Resultado após cadastro</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <CheckCircle className="w-5 h-5 text-green-400" />
@@ -929,7 +986,7 @@ export default function App() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-400" />
-                <span>Resultado em 3 minutos</span>
+                <span>Resultado após cadastro</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-5 h-5 text-green-400" />
@@ -965,7 +1022,10 @@ export default function App() {
             <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-8">
               Agende uma demonstração gratuita e descubra como nossa plataforma pode transformar a gestão de SST da sua empresa.
             </p>
-            <button className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/30 hover:shadow-blue-400/50 transform hover:scale-105">
+            <button
+              onClick={openDemo}
+              className="px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/30 hover:shadow-blue-400/50 transform hover:scale-105"
+            >
               Solicitar Demonstração
             </button>
           </motion.div>
@@ -1063,7 +1123,7 @@ export default function App() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl"
             onClick={(e) => {
-              if (e.target === e.currentTarget && !showLeadForm && !showResults) {
+              if (e.target === e.currentTarget && !showLeadForm && !canShowChecklistResults) {
                 resetChecklist();
               }
             }}
@@ -1074,7 +1134,7 @@ export default function App() {
               exit={{ scale: 0.9, y: 20 }}
               className="relative w-full max-w-4xl max-h-[90vh] overflow-auto rounded-3xl backdrop-blur-2xl bg-gradient-to-br from-slate-900/95 to-blue-950/95 border border-blue-400/30 shadow-2xl shadow-blue-500/20"
             >
-              {!showLeadForm && !showResults && (
+              {!showLeadForm && !canShowChecklistResults && (
                 <button
                   onClick={resetChecklist}
                   className="absolute top-6 right-6 p-2 rounded-xl hover:bg-white/10 transition-colors z-10"
@@ -1095,7 +1155,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {!showLeadForm && !showResults && (
+                {!showLeadForm && !canShowChecklistResults && (
                   <div className="mt-6">
                     <div className="flex justify-between text-sm text-gray-400 mb-2">
                       <span>Progresso</span>
@@ -1113,7 +1173,7 @@ export default function App() {
               </div>
 
               {/* Questions */}
-              {!showLeadForm && !showResults && (
+              {!showLeadForm && !canShowChecklistResults && (
                 <div className="p-8">
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -1168,7 +1228,7 @@ export default function App() {
               )}
 
               {/* Lead Form */}
-              {showLeadForm && !showResults && (
+              {showLeadForm && !canShowChecklistResults && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -1182,7 +1242,7 @@ export default function App() {
                       Seu diagnóstico NR-1 foi gerado com sucesso!
                     </h4>
                     <p className="text-lg text-gray-300">
-                      Cadastre-se para desbloquear o resultado completo da análise da sua empresa
+                      Cadastre sua empresa para desbloquear o resultado completo da análise
                     </p>
                   </div>
 
@@ -1214,6 +1274,17 @@ export default function App() {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
+                        <label className="block text-sm mb-2 text-gray-300">CNPJ da Empresa *</label>
+                        <input
+                          type="text"
+                          required
+                          value={leadData.cnpj}
+                          onChange={(e) => setLeadData({ ...leadData, cnpj: e.target.value })}
+                          placeholder="00.000.000/0000-00"
+                          className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
+                        />
+                      </div>
+                      <div>
                         <label className="block text-sm mb-2 text-gray-300">E-mail Corporativo *</label>
                         <input
                           type="email"
@@ -1241,7 +1312,7 @@ export default function App() {
                       type="submit"
                       className="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/30 hover:shadow-blue-400/50 transform hover:scale-105 flex items-center justify-center gap-2 text-lg font-bold"
                     >
-                      Ver Meu Resultado
+                      Cadastrar Empresa e Ver Resultado
                       <ChevronRight className="w-5 h-5" />
                     </button>
                   </form>
@@ -1249,7 +1320,7 @@ export default function App() {
               )}
 
               {/* Results */}
-              {showResults && (
+              {canShowChecklistResults && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
