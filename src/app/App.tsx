@@ -23,6 +23,7 @@ import {
   Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 import {
   RadarChart,
   PolarGrid,
@@ -52,10 +53,80 @@ import { useRealtimeDashboard } from './hooks/useRealtimeDashboard';
 
 export default function App() {
   const navigationSections = ['inicio', 'sobre', 'indicadores', 'beneficios', 'contato'];
+  const blogArticles = [
+    {
+      title: 'O que mudou na NR-1 recentemente',
+      image: 'https://images.unsplash.com/photo-1769490314439-dc41e69258ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'Entenda as principais mudancas na Norma Regulamentadora 1, incluindo novos requisitos para GRO e PGR, prazos de implementacao e impactos para empresas de diferentes portes.',
+      category: 'Atualizacao',
+      content: [
+        'A NR-1 consolidou o gerenciamento de riscos ocupacionais como rotina permanente da empresa, com foco em identificar perigos, avaliar riscos e acompanhar controles.',
+        'Na pratica, isso exige um PGR atualizado, registros organizados e evidencias de treinamentos, auditorias e planos de acao.',
+        'Empresas que tratam a norma como processo continuo conseguem reduzir multas, atrasos em fiscalizacoes e riscos para as equipes.'
+      ]
+    },
+    {
+      title: 'Entendendo o GRO na pratica',
+      image: 'https://images.unsplash.com/photo-1776875479148-e51ea920282c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHw0fHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'O Gerenciamento de Riscos Ocupacionais e fundamental para ambientes seguros. Aprenda a identificar perigos, avaliar riscos e implementar medidas de controle eficazes.',
+      category: 'Gestao',
+      content: [
+        'O GRO organiza a gestao de riscos desde o levantamento inicial ate o acompanhamento das medidas preventivas.',
+        'Uma boa rotina inclui matriz de riscos, responsaveis definidos, prazos claros e indicadores que mostrem se os controles estao funcionando.',
+        'Com dados centralizados, a lideranca consegue priorizar o que precisa de atencao imediata.'
+      ]
+    },
+    {
+      title: 'Capacitacao e treinamentos obrigatorios',
+      image: 'https://images.unsplash.com/photo-1737575655055-e3967cbefd03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwzfHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'Conheca os treinamentos exigidos pela NR-1, periodicidade, conteudo programatico e como estruturar um programa de capacitacao completo para sua equipe.',
+      category: 'Treinamento',
+      content: [
+        'Treinamentos precisam ter conteudo adequado ao risco, comprovantes de participacao e controle de validade.',
+        'O acompanhamento digital evita vencimentos silenciosos e facilita a preparacao para auditorias.',
+        'A recomendacao e manter trilhas por cargo, area e exposicao ocupacional.'
+      ]
+    },
+    {
+      title: 'Gerenciamento eficaz de riscos ocupacionais',
+      image: 'https://images.unsplash.com/photo-1737574994780-e31827afaed7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHw1fHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'Estrategias comprovadas para identificar, avaliar e mitigar riscos no ambiente de trabalho. Utilize ferramentas modernas e metodologias que garantem conformidade.',
+      category: 'Prevencao',
+      content: [
+        'A eficiencia vem de controles proporcionais ao risco, revisoes periodicas e acompanhamento de indicadores.',
+        'Quando uma ocorrencia, quase acidente ou mudanca de processo acontece, o inventario de riscos deve ser reavaliado.',
+        'Esse ciclo ajuda a transformar conformidade em prevencao real.'
+      ]
+    },
+    {
+      title: 'Seguranca ocupacional: cultura de prevencao',
+      image: 'https://images.unsplash.com/photo-1776875097847-49bd9bcf1eca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'Construir uma cultura de seguranca solida reduz acidentes e aumenta a produtividade. Descubra como engajar colaboradores e liderancas nessa transformacao.',
+      category: 'Cultura',
+      content: [
+        'Cultura preventiva depende de comunicacao simples, liderancas presentes e canais para registrar riscos sem burocracia.',
+        'Reconhecer boas praticas e agir rapidamente sobre desvios aumenta a confianca dos colaboradores no sistema.',
+        'A tecnologia ajuda quando torna os registros faceis e visiveis para quem precisa decidir.'
+      ]
+    },
+    {
+      title: 'Conformidade empresarial: evite multas',
+      image: 'https://images.unsplash.com/photo-1769490314439-dc41e69258ac?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwyfHxjb3Jwb3JhdGUlMjBkYXNoYm9hcmQlMjB0ZWNobm9sb2d5JTIwYmx1ZSUyMHByb2Zlc3Npb25hbHxlbnwxfHx8fDE3Nzg3MDA5ODh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      summary: 'Manter-se em conformidade com a NR-1 evita penalidades e processos trabalhistas. Veja um checklist completo de requisitos e prazos de adequacao.',
+      category: 'Compliance',
+      content: [
+        'Conformidade exige evidencias: documentos, registros de treinamento, planos de acao e historico de auditorias.',
+        'A falta de rastreabilidade costuma ser tao problematica quanto a ausencia do documento em si.',
+        'Uma revisao preventiva ajuda a corrigir pendencias antes de fiscalizacoes ou auditorias externas.'
+      ]
+    }
+  ];
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('inicio');
   const [scrolled, setScrolled] = useState(false);
   const [scrollY, setScrollY] = useState(0);
+  const [selectedArticle, setSelectedArticle] = useState<(typeof blogArticles)[number] | null>(null);
+  const [legalNotice, setLegalNotice] = useState<'privacy' | 'terms' | null>(null);
   const {
     data: realtimeDashboard,
     isConnected: isRealtimeConnected,
@@ -195,6 +266,33 @@ export default function App() {
     setIsCompanyRegistered(true);
     setShowLeadForm(false);
     setShowResults(true);
+  };
+
+  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    localStorage.setItem('nr1.contact.request', JSON.stringify({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      company: formData.get('company'),
+      phone: formData.get('phone'),
+      message: formData.get('message'),
+      sentAt: new Date().toISOString(),
+    }));
+
+    form.reset();
+    toast.success('Mensagem enviada com sucesso', {
+      description: 'Nossa equipe recebeu sua solicitacao e retornara em breve.',
+    });
+  };
+
+  const handleSupportClick = () => {
+    scrollToSection('contato');
+    toast.info('Suporte direcionado para contato', {
+      description: 'Preencha o formulario para falar com a equipe Portal NR-1.',
+    });
   };
 
   useEffect(() => {
@@ -620,7 +718,11 @@ export default function App() {
                     {article.title}
                   </h3>
                   <p className="text-gray-400 mb-4 leading-relaxed text-sm line-clamp-3">{article.summary}</p>
-                  <button className="flex items-center gap-2 text-blue-400 hover:gap-3 transition-all font-medium group/btn">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedArticle(blogArticles[index])}
+                    className="flex items-center gap-2 text-blue-400 hover:gap-3 transition-all font-medium group/btn"
+                  >
                     <span>Ler mais</span>
                     <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
@@ -1036,13 +1138,15 @@ export default function App() {
             viewport={{ once: true }}
             className="p-8 rounded-2xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/[0.02] border border-white/10"
           >
-            <form className="space-y-6" aria-label="Formulário de contato">
+            <form onSubmit={handleContactSubmit} className="space-y-6" aria-label="Formulário de contato">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="contact-name" className="block text-sm mb-2 text-gray-300">Nome Completo</label>
                   <input
                     id="contact-name"
+                    name="name"
                     type="text"
+                    required
                     placeholder="Seu nome"
                     aria-label="Nome completo"
                     aria-required="true"
@@ -1053,7 +1157,9 @@ export default function App() {
                   <label htmlFor="contact-email" className="block text-sm mb-2 text-gray-300">E-mail Corporativo</label>
                   <input
                     id="contact-email"
+                    name="email"
                     type="email"
+                    required
                     placeholder="seu@email.com"
                     aria-label="E-mail corporativo"
                     aria-required="true"
@@ -1065,7 +1171,9 @@ export default function App() {
                 <div>
                   <label className="block text-sm mb-2 text-gray-300">Empresa</label>
                   <input
+                    name="company"
                     type="text"
+                    required
                     placeholder="Nome da empresa"
                     className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
                   />
@@ -1073,7 +1181,9 @@ export default function App() {
                 <div>
                   <label className="block text-sm mb-2 text-gray-300">Telefone</label>
                   <input
+                    name="phone"
                     type="tel"
+                    required
                     placeholder="(00) 00000-0000"
                     className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
                   />
@@ -1082,7 +1192,9 @@ export default function App() {
               <div>
                 <label className="block text-sm mb-2 text-gray-300">Mensagem</label>
                 <textarea
+                  name="message"
                   rows={4}
+                  required
                   placeholder="Como podemos ajudar?"
                   className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all resize-none"
                 ></textarea>
@@ -1449,6 +1561,122 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Blog Article Modal */}
+      <AnimatePresence>
+        {selectedArticle && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedArticle(null);
+            }}
+          >
+            <motion.article
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-3xl max-h-[90vh] overflow-auto rounded-3xl backdrop-blur-2xl bg-gradient-to-br from-slate-900/95 to-blue-950/95 border border-blue-400/30 shadow-2xl shadow-blue-500/20"
+            >
+              <button
+                type="button"
+                onClick={() => setSelectedArticle(null)}
+                className="absolute top-4 right-4 z-10 p-2 rounded-xl bg-slate-950/70 hover:bg-white/10 transition-colors"
+                aria-label="Fechar artigo"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <div className="relative h-56 overflow-hidden rounded-t-3xl">
+                <img src={selectedArticle.image} alt={selectedArticle.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+                <span className="absolute left-6 bottom-6 px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg">
+                  {selectedArticle.category}
+                </span>
+              </div>
+              <div className="p-6 sm:p-8">
+                <h3 className="text-2xl sm:text-3xl font-bold mb-4">{selectedArticle.title}</h3>
+                <p className="text-gray-300 leading-relaxed mb-6">{selectedArticle.summary}</p>
+                <div className="space-y-4 text-gray-300 leading-relaxed">
+                  {selectedArticle.content.map((paragraph) => (
+                    <p key={paragraph}>{paragraph}</p>
+                  ))}
+                </div>
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedArticle(null);
+                      setIsChecklistOpen(true);
+                    }}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 font-bold"
+                  >
+                    Avaliar Minha Empresa
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedArticle(null);
+                      scrollToSection('contato');
+                    }}
+                    className="px-6 py-3 rounded-xl border-2 border-white/10 hover:border-blue-400 backdrop-blur-sm hover:bg-white/5 transition-all font-bold"
+                  >
+                    Falar com Especialista
+                  </button>
+                </div>
+              </div>
+            </motion.article>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Footer Legal Modal */}
+      <AnimatePresence>
+        {legalNotice && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setLegalNotice(null);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="relative w-full max-w-xl rounded-3xl backdrop-blur-2xl bg-gradient-to-br from-slate-900/95 to-blue-950/95 border border-blue-400/30 shadow-2xl shadow-blue-500/20 p-6 sm:p-8"
+            >
+              <button
+                type="button"
+                onClick={() => setLegalNotice(null)}
+                className="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/10 transition-colors"
+                aria-label="Fechar aviso"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <h3 className="text-2xl font-bold mb-4">
+                {legalNotice === 'privacy' ? 'Política de Privacidade' : 'Termos de Uso'}
+              </h3>
+              <p className="text-gray-300 leading-relaxed mb-4">
+                {legalNotice === 'privacy'
+                  ? 'As informacoes preenchidas nos formularios sao usadas para atendimento, demonstracao da plataforma e diagnostico NR-1 solicitado.'
+                  : 'Este portal apresenta conteudo demonstrativo e ferramentas de apoio para gestao de SST. A adequacao final deve considerar a realidade da empresa e avaliacao tecnica responsavel.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => setLegalNotice(null)}
+                className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-all shadow-xl shadow-blue-500/30 font-bold"
+              >
+                Entendi
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Accessibility Components */}
       <AccessibilityPanel />
       <VoiceAssistant />
@@ -1471,9 +1699,9 @@ export default function App() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-blue-400 transition-colors">Política de Privacidade</a>
-              <a href="#" className="hover:text-blue-400 transition-colors">Termos de Uso</a>
-              <a href="#" className="hover:text-blue-400 transition-colors">Suporte</a>
+              <button type="button" onClick={() => setLegalNotice('privacy')} className="hover:text-blue-400 transition-colors">Política de Privacidade</button>
+              <button type="button" onClick={() => setLegalNotice('terms')} className="hover:text-blue-400 transition-colors">Termos de Uso</button>
+              <button type="button" onClick={handleSupportClick} className="hover:text-blue-400 transition-colors">Suporte</button>
             </div>
 
             <div className="text-center md:text-right">
