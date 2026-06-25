@@ -11,6 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/demoQuestions.js"></script>
 
 <style>
 
@@ -365,7 +366,7 @@ input[type="radio"]{
         </div>
 
         <div class="card">
-            <h3>NÃ­vel de SeguranÃ§a</h3>
+            <h3>Nível de Segurança</h3>
             <div class="value" id="securityValue">0%</div>
         </div>
 
@@ -401,12 +402,12 @@ input[type="radio"]{
         </div>
 
         <div class="panel">
-            <h2>Resumo EstratÃ©gico</h2>
+            <h2>Resumo Estratégico</h2>
 
             <p style="line-height:1.8;color:#dbe7f3;">
-                O sistema monitora indicadores relacionados Ã  conformidade da NR-1,
-                gestÃ£o de riscos ocupacionais, treinamentos obrigatÃ³rios,
-                controle documental, inspeÃ§Ãµes periÃ³dicas e prevenÃ§Ã£o de acidentes.
+                O sistema monitora indicadores relacionados à conformidade da NR-1,
+                gestão de riscos ocupacionais, treinamentos obrigatórios,
+                controle documental, inspeções periódicas e prevenção de acidentes.
             </p>
 
         </div>
@@ -429,8 +430,8 @@ input[type="radio"]{
                 <tr>
                     <th>Item</th>
                     <th>SIM</th>
-                    <th>EM IMPLEMENTAÃ‡ÃƒO</th>
-                    <th>NÃƒO</th>
+                    <th>EM IMPLEMENTAÇÃO</th>
+                    <th>NÃO</th>
                 </tr>
             </thead>
 
@@ -490,7 +491,7 @@ input[type="radio"]{
 
 <section class="section" id="relatorios">
 
-    <h1 class="title">RelatÃ³rios Inteligentes</h1>
+    <h1 class="title">Relatórios Inteligentes</h1>
 
     <div class="cards">
 
@@ -500,7 +501,7 @@ input[type="radio"]{
         </div>
 
         <div class="card">
-            <h3>ClassificaÃ§Ã£o</h3>
+            <h3>Classificação</h3>
             <div class="value" id="classificacao">Inicial</div>
         </div>
 
@@ -508,10 +509,10 @@ input[type="radio"]{
 
     <div class="panel">
 
-        <h2>DiagnÃ³stico AutomÃ¡tico</h2>
+        <h2>Diagnóstico Automático</h2>
 
         <p id="diagnostico" style="line-height:1.8;color:#dbe7f3;">
-            Responda o checklist para gerar o diagnÃ³stico.
+            Responda o checklist para gerar o diagnóstico.
         </p>
 
     </div>
@@ -520,7 +521,7 @@ input[type="radio"]{
 
     <div class="panel">
 
-        <h2>SugestÃµes Inteligentes</h2>
+        <h2>Sugestões Inteligentes</h2>
 
         <ul id="sugestoes" style="line-height:2;color:#dbe7f3;padding-left:20px;">
         </ul>
@@ -550,7 +551,7 @@ input[type="radio"]{
     <div class="cards">
 
         <div class="card">
-            <h3>GestÃ£o de Riscos</h3>
+            <h3>Gestão de Riscos</h3>
             <div class="value">Ativo</div>
         </div>
 
@@ -560,12 +561,12 @@ input[type="radio"]{
         </div>
 
         <div class="card">
-            <h3>SeguranÃ§a Ocupacional</h3>
+            <h3>Segurança Ocupacional</h3>
             <div class="value">Elevada</div>
         </div>
 
         <div class="card">
-            <h3>GestÃ£o Documental</h3>
+            <h3>Gestão Documental</h3>
             <div class="value">Atualizada</div>
         </div>
 
@@ -583,11 +584,11 @@ input[type="radio"]{
 
         <p style="line-height:2;color:#dbe7f3;">
 
-            A conformidade empresarial relacionada Ã  NR-1 envolve gestÃ£o preventiva,
+            A conformidade empresarial relacionada à NR-1 envolve gestão preventiva,
             auditorias internas, controle documental, gerenciamento de riscos ocupacionais,
-            seguranÃ§a corporativa e reduÃ§Ã£o de riscos jurÃ­dicos.
+            segurança corporativa e redução de riscos jurídicos.
             O cumprimento adequado fortalece a cultura organizacional e melhora
-            os indicadores de saÃºde e seguranÃ§a ocupacional.
+            os indicadores de saúde e segurança ocupacional.
 
         </p>
 
@@ -648,20 +649,7 @@ companyForm.addEventListener("submit",(event)=>{
 
 /* CHECKLIST */
 
-const checklistItems = [
-
-"Programa de gerenciamento de riscos",
-"Treinamentos obrigatÃ³rios",
-"Controle documental",
-"Plano de emergÃªncia",
-"GestÃ£o de riscos ocupacionais",
-"Uso de EPIs",
-"Compliance empresarial",
-"InspeÃ§Ãµes periÃ³dicas",
-"SeguranÃ§a operacional",
-"Indicadores de seguranÃ§a"
-
-];
+const checklistItems = window.NR1_DEMO_QUESTIONS;
 
 const checklistBody = document.getElementById("checklistBody");
 
@@ -705,8 +693,8 @@ const radarChart = new Chart(ctx, {
             'Treinamentos',
             'Compliance',
             'EPIs',
-            'InspeÃ§Ãµes',
-            'DocumentaÃ§Ã£o'
+            'Inspeções',
+            'Documentação'
         ],
 
         datasets:[{
@@ -773,7 +761,7 @@ function calculate(){
         status = "Moderado";
     }
     else{
-        status = "CrÃ­tico";
+        status = "Crítico";
     }
 
     document.getElementById("statusValue").innerText = status;
@@ -805,7 +793,7 @@ function generateDiagnosis(percent){
     if(percent >= 80){
 
         diagnostico.innerHTML =
-        "A empresa apresenta elevado nÃ­vel de conformidade com a NR-1 e mantÃ©m indicadores preventivos positivos.";
+        "A empresa apresenta elevado nível de conformidade com a NR-1 e mantém indicadores preventivos positivos.";
 
         addSuggestion("Continuar monitoramentos preventivos.");
         addSuggestion("Atualizar treinamentos periodicamente.");
@@ -816,10 +804,10 @@ function generateDiagnosis(percent){
     else if(percent >= 60){
 
         diagnostico.innerHTML =
-        "A empresa possui boa estrutura preventiva, porÃ©m existem pontos de melhoria operacional.";
+        "A empresa possui boa estrutura preventiva, porém existem pontos de melhoria operacional.";
 
-        addSuggestion("Fortalecer inspeÃ§Ãµes periÃ³dicas.");
-        addSuggestion("Atualizar documentaÃ§Ã£o preventiva.");
+        addSuggestion("Fortalecer inspeções periódicas.");
+        addSuggestion("Atualizar documentação preventiva.");
         addSuggestion("Melhorar indicadores operacionais.");
 
     }
@@ -827,11 +815,11 @@ function generateDiagnosis(percent){
     else{
 
         diagnostico.innerHTML =
-        "A empresa apresenta necessidade de melhorias relacionadas Ã  gestÃ£o de riscos e conformidade preventiva.";
+        "A empresa apresenta necessidade de melhorias relacionadas à gestão de riscos e conformidade preventiva.";
 
         addSuggestion("Implementar PGR atualizado.");
-        addSuggestion("Realizar treinamentos obrigatÃ³rios.");
-        addSuggestion("ReforÃ§ar gestÃ£o de riscos ocupacionais.");
+        addSuggestion("Realizar treinamentos obrigatórios.");
+        addSuggestion("Reforçar gestão de riscos ocupacionais.");
         addSuggestion("Melhorar compliance empresarial.");
 
     }
@@ -870,7 +858,7 @@ document.getElementById("resetSystem")
     document.getElementById("classificacao").innerText="Inicial";
 
     document.getElementById("diagnostico").innerText=
-    "Responda o checklist para gerar o diagnÃ³stico.";
+    "Responda o checklist para gerar o diagnóstico.";
 
     document.getElementById("sugestoes").innerHTML="";
 
